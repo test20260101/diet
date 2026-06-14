@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>4주 Diet Plan</title>
+<meta name="description" content="4주 완성 다이어트 식단 플래너 — 체중 기록 & 끼니 체크">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diet Plan">
+<meta name="theme-color" content="#3D7A5E">
+<!-- 홈화면 아이콘 -->
+<link rel="icon" href="icon.png" type="image/png">
+<link rel="apple-touch-icon" href="icon.png">
+<!-- OG (카카오/링크 공유 시 미리보기) -->
+<meta property="og:title" content="4주 Diet Plan">
+<meta property="og:description" content="4주 완성 다이어트 식단 플래너">
+<meta property="og:image" content="icon.png">
+<meta property="og:type" content="website">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Serif+Display:ital@0;1&display=swap');
+
+:root {
+  --bg: #F4F2ED;
+  --surface: #FFFFFF;
+  --text-dark: #1A1A18;
+  --text-mid: #4A4A44;
+  --text-soft: #9A9A90;
+  --green: #3D7A5E;
+  --green-light: #EAF4EE;
+  --lime: #5A8A3D;
+  --lime-light: #EEF5E0;
+  --orange: #D4824A;
+  --orange-light: #FFF0E4;
+  --red: #B84A2A;
+  --red-light: #FFE8E0;
+  --purple: #6A4EB8;
+  --purple-light: #F0EEFF;
+  --sun-color: #B84A2A;
+  --sat-color: #3A5AB8;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── LAYOUT WRAPPER ─── */
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+/* ─── HEADER ─── */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.header-left {}
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1.0;
+  letter-spacing: -1px;
+}
+.title em { font-style: italic; color: var(--green); }
+.subtitle {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-soft);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+}
+
+/* rules pills */
+.rules-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.pill {
+  background: var(--surface);
+  border: 1.5px solid #E0DED8;
+  border-radius: 100px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* ─── LEGEND ─── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 32px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+}
+.ldot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ─── WEEK BLOCK ─── */
+.week-block { margin-bottom: 40px; }
+.week-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #E8E6E0;
+}
+.wk-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 5px 14px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.wk-title { font-size: 16px; font-weight: 700; }
+.wk-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; font-weight: 400; }
+
+/* ─── PC CALENDAR (7-column grid) ─── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.col-head { display: none; }
+
+/* DAY CARD */
+.day-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 12px 10px;
+  min-height: 148px;
+  border-left: 3px solid transparent;
+  position: relative;
+  transition: box-shadow 0.15s, transform 0.1s;
+  cursor: default;
+}
+.day-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+.day-card.empty { background: transparent; box-shadow: none; transform: none; cursor: default; }
+
+.day-num {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.day-card.sun .day-num { color: var(--sun-color); }
+.day-card.sat .day-num { color: var(--sat-color); }
+
+.phase-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.fast-badge {
+  position: absolute;
+  top: 9px; right: 9px;
+  background: var(--purple-light);
+  border: 1px solid var(--purple);
+  color: var(--purple);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+  letter-spacing: 0.04em;
+}
+
+.meal-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.meal-row:hover .meal-tx { color: var(--text-dark); }
+
+/* 체크박스 */
+.meal-cb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid #C8C8C0;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s, border-color 0.15s;
+  background: #fff;
+}
+.meal-cb:checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+.meal-cb:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px; top: 0.5px;
+  width: 5px; height: 8px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* 체크 완료 시 텍스트 */
+.meal-row.done .meal-tx {
+  text-decoration: line-through;
+  color: #B0B0A8;
+}
+.meal-row.done .meal-tx b { color: #B0B0A8; }
+
+.meal-ic { font-size: 10px; flex-shrink: 0; margin-top: 2px; line-height: 1.4; }
+.meal-tx {
+  font-size: 10.5px;
+  color: var(--text-mid);
+  line-height: 1.4;
+  transition: color 0.15s;
+}
+.meal-tx b { font-weight: 600; color: var(--text-dark); }
+
+/* phase themes */
+.p1a { border-left-color: #5AAA80; background: #FBFFF9; }
+.p1a .phase-tag { background: #E6F5EC; color: #2A6A44; }
+.p1b { border-left-color: #7AAA55; background: #FBFFF7; }
+.p1b .phase-tag { background: #EAF5E0; color: #3A6A24; }
+.p2  { border-left-color: #90A840; background: #FAFEF4; }
+.p2 .phase-tag  { background: #EEF5D8; color: #506A18; }
+.p3  { border-left-color: #D4824A; background: #FFFCF7; }
+.p3 .phase-tag  { background: #FFE8D0; color: #8A4418; }
+.p4  { border-left-color: #B84A2A; background: #FFFBF8; }
+.p4 .phase-tag  { background: #FFE0D4; color: #7A2810; }
+.pfast { border-left-color: var(--purple) !important; background: #FAF8FF !important; }
+.pfast .phase-tag { background: var(--purple-light); color: var(--purple); }
+
+/* ─── TIPS ─── */
+.tips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 40px;
+}
+.tip-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  border-top: 3px solid var(--green);
+}
+.tip-card h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+}
+.tip-card li {
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.7;
+  margin-left: 14px;
+}
+
+/* ─── DIVIDER ─── */
+.divider {
+  border: none;
+  border-top: 1px dashed #DDD;
+  margin: 8px 0 32px;
+}
+
+/* ─── START WEIGHT BANNER ─── */
+.start-weight-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin-bottom: 28px;
+  border-left: 4px solid var(--green);
+  flex-wrap: wrap;
+}
+.sw-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  white-space: nowrap;
+}
+.sw-input-wrap { display: flex; align-items: center; gap: 6px; }
+.sw-input {
+  width: 90px;
+  border: 1.5px solid #DDD;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text-dark);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+  background: #FAFAFA;
+}
+.sw-input:focus { border-color: var(--green); background: #fff; }
+.sw-unit { font-size: 14px; font-weight: 600; color: var(--text-soft); }
+.sw-hint { font-size: 12px; color: var(--text-soft); }
+
+/* ─── DAILY WEIGHT IN CARD ─── */
+.weight-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px dashed #E8E6E0;
+}
+.weight-ic { font-size: 11px; flex-shrink: 0; }
+.weight-input {
+  width: 58px;
+  border: 1.5px solid #DDD;
+  border-radius: 6px;
+  padding: 3px 5px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text-dark);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+  background: #FAFAFA;
+}
+.weight-input:focus { border-color: var(--green); background: #fff; }
+.weight-unit { font-size: 10px; color: var(--text-soft); font-weight: 500; flex-shrink: 0; }
+.weight-diff {
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 1px;
+  min-width: 48px;
+  white-space: nowrap;
+}
+.weight-diff.minus { color: #3D7A5E; }
+.weight-diff.plus  { color: #B84A2A; }
+.weight-diff.zero  { color: var(--text-soft); }
+
+/* ══════════════════════════════════════
+   MOBILE  ≤ 700px
+   각 날짜를 가로 전체 카드로 표시
+══════════════════════════════════════ */
+@media (max-width: 700px) {
+  .page { padding: 20px 14px 60px; }
+
+  /* header */
+  .header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .title { font-size: 34px; }
+  .rules-bar { display: none; } /* 모바일: 상단 룰 숨기고 하단 팁에 통합 */
+
+  .legend { gap: 8px 14px; padding: 12px 14px; }
+  .legend-item { font-size: 11px; }
+
+  /* week header */
+  .week-header { padding-bottom: 10px; margin-bottom: 12px; }
+  .wk-title { font-size: 14px; }
+  .wk-sub { font-size: 11px; }
+
+  /* 4-col grid → 2-col on mobile */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .col-head { display: none; }
+  .day-card.empty { display: none; }
+
+  .day-card {
+    min-height: 160px;
+    padding: 10px 10px 10px;
+    border-left-width: 4px;
+    border-radius: var(--radius-sm);
+    display: block;
+  }
+
+  .day-num {
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .phase-tag {
+    font-size: 8px;
+    margin-bottom: 6px;
+  }
+
+  .fast-badge {
+    font-size: 8px;
+    padding: 2px 5px;
+    top: 8px; right: 8px;
+  }
+
+  .meals-wrap { display: block; }
+
+  .meal-row { margin-bottom: 5px; }
+  .meal-ic { font-size: 12px; }
+  .meal-tx { font-size: 12px; }
+  .meal-cb { width: 15px; height: 15px; margin-top: 2px; }
+
+  /* tips 4→2 col */
+  .tips { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tip-card { padding: 14px 12px; }
+  .tip-card li { font-size: 11.5px; }
+
+  /* 모바일 체중 행 */
+  .weight-row { margin-top: 10px; padding-top: 8px; }
+  .weight-input { width: 70px; font-size: 13px; padding: 4px 6px; }
+  .weight-diff { font-size: 12px; }
+  .start-weight-bar { padding: 14px 16px; gap: 10px; }
+  .sw-input { font-size: 20px; width: 80px; }
+}
+
+/* TABLET 701~1024px */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .page { padding: 28px 20px 60px; }
+  .meal-tx { font-size: 9.5px; }
+  .meal-ic { font-size: 9.5px; }
+  .day-card { min-height: 150px; }
+  .tips { grid-template-columns: repeat(2, 1fr); }
+}
+
+
+
+
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1 class="title">4주 완성<br><em>Diet Plan</em></h1>
+    <p class="subtitle">지방 대사 스위치 켜기 · 대사유연성 회복 · 체지방 감량 극대화</p>
+  </div>
+  <div class="rules-bar">
+    <span class="pill">💧 물 2L 이상</span>
+    <span class="pill">😴 수면 6시간+</span>
+    <span class="pill">⏰ 14h 단식</span>
+    <span class="pill">🏃 주 4회 운동</span>
+    <span class="pill">🌙 저녁 취침 4h 전</span>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="ldot" style="background:#5AAA80"></div>1단계(1~3일) 쉐이크만</div>
+  <div class="legend-item"><div class="ldot" style="background:#7AAA55"></div>2단계(4~7일) 점심 저탄수</div>
+  <div class="legend-item"><div class="ldot" style="background:#90A840"></div>2주차 간헐적단식</div>
+  <div class="legend-item"><div class="ldot" style="background:#D4824A"></div>3주차 24h단식 추가</div>
+  <div class="legend-item"><div class="ldot" style="background:#B84A2A"></div>4주차 체지방 극대화</div>
+  <div class="legend-item"><div class="ldot" style="background:#6A4EB8"></div>⚡ 24시간 단식일</div>
+</div>
+
+<!-- START WEIGHT BANNER -->
+<div class="start-weight-bar">
+  <span class="sw-label">⚖️ 시작 체중</span>
+  <div class="sw-input-wrap">
+    <input type="text" class="sw-input" id="startWeight" inputmode="decimal" placeholder="00.0" maxlength="5">
+    <span class="sw-unit">kg</span>
+  </div>
+  <span class="sw-hint">입력하면 매일 차이가 자동 계산돼요</span>
+</div>
+
+
+<!-- ══ 1주차 ══ -->
+<div class="week-block">
+  <div class="week-header">
+    <span class="wk-badge" style="background:#E6F5EC;color:#2A6A44;">1주차</span>
+    <div><div class="wk-title">지방 대사 스위치 켜기</div><div class="wk-sub">장 휴식 → 렙틴 저항성 개선</div></div>
+  </div>
+  <div class="cal-grid">
+    <div class="day-card p1a">
+      <div class="day-num">1</div>
+      <span class="phase-tag" >1단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="1" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-1"></span></div>
+    </div>
+    <div class="day-card p1a">
+      <div class="day-num">2</div>
+      <span class="phase-tag" >1단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="2" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-2"></span></div>
+    </div>
+    <div class="day-card p1a">
+      <div class="day-num">3</div>
+      <span class="phase-tag" >1단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="3" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-3"></span></div>
+    </div>
+    <div class="day-card p1b">
+      <div class="day-num">4</div>
+      <span class="phase-tag" >2단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="4" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-4"></span></div>
+    </div>
+    <div class="day-card p1b">
+      <div class="day-num">5</div>
+      <span class="phase-tag" >2단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="5" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-5"></span></div>
+    </div>
+    <div class="day-card p1b">
+      <div class="day-num">6</div>
+      <span class="phase-tag" >2단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="6" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-6"></span></div>
+    </div>
+    <div class="day-card p1b">
+      <div class="day-num">7</div>
+      <span class="phase-tag" >2단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="7" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-7"></span></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ 2주차 ══ -->
+<div class="week-block">
+  <div class="week-header">
+    <span class="wk-badge" style="background:#EEF5E0;color:#3A6A24;">2주차</span>
+    <div><div class="wk-title">간헐적 단식 + 인슐린 저항성 개선</div><div class="wk-sub">하루 2식 + 쉐이크 2회 | ☕ 블랙커피 오전 1잔 OK</div></div>
+  </div>
+  <div class="cal-grid">
+    <div class="day-card p2">
+      <div class="day-num">8</div>
+      <span class="phase-tag" >3단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="8" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-8"></span></div>
+    </div>
+    <div class="day-card p2">
+      <div class="day-num">9</div>
+      <span class="phase-tag" >3단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="9" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-9"></span></div>
+    </div>
+    <div class="day-card p2">
+      <div class="day-num">10</div>
+      <span class="phase-tag" >3단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="10" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-10"></span></div>
+    </div>
+    <div class="day-card p2">
+      <div class="day-num">11</div>
+      <span class="phase-tag" >3단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="11" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-11"></span></div>
+    </div>
+    <div class="day-card p2">
+      <div class="day-num">12</div>
+      <span class="phase-tag" >3단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="12" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-12"></span></div>
+    </div>
+    <div class="day-card p2">
+      <div class="day-num">13</div>
+      <span class="phase-tag" >3단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="13" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-13"></span></div>
+    </div>
+    <div class="day-card p2">
+      <div class="day-num">14</div>
+      <span class="phase-tag" >3단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="14" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-14"></span></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ 3주차 ══ -->
+<div class="week-block">
+  <div class="week-header">
+    <span class="wk-badge" style="background:#FFE8D0;color:#8A4418;">3주차</span>
+    <div><div class="wk-title">대사유연성 회복 + 주 2회 24h 단식</div><div class="wk-sub">단호박·토마토·베리류 추가 허용 | ⚡ 보라색 = 단식일</div></div>
+  </div>
+  <div class="cal-grid">
+    <div class="day-card pfast">
+      <div class="day-num">15</div>
+      <span class="phase-tag" style="background:#F0EEFF;color:#5A3EA4;">4단계</span>
+      <div class="fast-badge">⚡24h단식</div>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">💧</span><span class="meal-tx">물·블랙커피·녹차만</span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>종료 후</b> 고단백 식사</span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="15" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-15"></span></div>
+    </div>
+    <div class="day-card p3">
+      <div class="day-num">16</div>
+      <span class="phase-tag" >4단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="16" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-16"></span></div>
+    </div>
+    <div class="day-card p3">
+      <div class="day-num">17</div>
+      <span class="phase-tag" >4단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="17" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-17"></span></div>
+    </div>
+    <div class="day-card pfast">
+      <div class="day-num">18</div>
+      <span class="phase-tag" style="background:#F0EEFF;color:#5A3EA4;">4단계</span>
+      <div class="fast-badge">⚡24h단식</div>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">💧</span><span class="meal-tx">물·블랙커피·녹차만</span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>종료 후</b> 고단백 식사</span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="18" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-18"></span></div>
+    </div>
+    <div class="day-card p3">
+      <div class="day-num">19</div>
+      <span class="phase-tag" >4단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="19" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-19"></span></div>
+    </div>
+    <div class="day-card p3">
+      <div class="day-num">20</div>
+      <span class="phase-tag" >4단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="20" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-20"></span></div>
+    </div>
+    <div class="day-card p3">
+      <div class="day-num">21</div>
+      <span class="phase-tag" >4단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="21" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-21"></span></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ 4주차 ══ -->
+<div class="week-block">
+  <div class="week-header">
+    <span class="wk-badge" style="background:#FFE0D4;color:#7A2810;">4주차</span>
+    <div><div class="wk-title">체지방 감량 극대화</div><div class="wk-sub">과일 1개/일 추가 허용 | 주 2회 24h 단식 지속</div></div>
+  </div>
+  <div class="cal-grid">
+    <div class="day-card pfast">
+      <div class="day-num">22</div>
+      <span class="phase-tag" style="background:#F0EEFF;color:#5A3EA4;">5단계</span>
+      <div class="fast-badge">⚡24h단식</div>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">💧</span><span class="meal-tx">물·블랙커피·녹차만</span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>종료 후</b> 고단백 식사</span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="22" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-22"></span></div>
+    </div>
+    <div class="day-card p4">
+      <div class="day-num">23</div>
+      <span class="phase-tag" >5단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="23" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-23"></span></div>
+    </div>
+    <div class="day-card p4">
+      <div class="day-num">24</div>
+      <span class="phase-tag" >5단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="24" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-24"></span></div>
+    </div>
+    <div class="day-card pfast">
+      <div class="day-num">25</div>
+      <span class="phase-tag" style="background:#F0EEFF;color:#5A3EA4;">5단계</span>
+      <div class="fast-badge">⚡24h단식</div>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">💧</span><span class="meal-tx">물·블랙커피·녹차만</span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>종료 후</b> 고단백 식사</span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="25" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-25"></span></div>
+    </div>
+    <div class="day-card p4">
+      <div class="day-num">26</div>
+      <span class="phase-tag" >5단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="26" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-26"></span></div>
+    </div>
+    <div class="day-card p4">
+      <div class="day-num">27</div>
+      <span class="phase-tag" >5단계</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="27" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-27"></span></div>
+    </div>
+    <div class="day-card p4">
+      <div class="day-num">28 🎉</div>
+      <span class="phase-tag" style="background:#E6F5EC;color:#2A6A44;">완성!</span>
+      <div class="meals-wrap">
+        <div class="meal-row"><span class="meal-ic">🌅</span><span class="meal-tx"><b>아침</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">☀️</span><span class="meal-tx"><b>점심</b> <span style="color:#8A7A2A;font-weight:600;">저탄수식</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌤</span><span class="meal-tx"><b>간식</b> <span style="color:#4A9A6A;font-weight:600;">쉐이크</span></span></div>
+        <div class="meal-row"><span class="meal-ic">🌙</span><span class="meal-tx"><b>저녁</b> <span style="color:#8A4A2A;font-weight:600;">무탄수식</span></span></div>
+      </div>
+      <div class="weight-row"><span class="weight-ic">⚖️</span><input type="text" class="weight-input" data-day="28" inputmode="decimal" placeholder="--.-" maxlength="5"><span class="weight-unit">kg</span><span class="weight-diff" id="diff-28"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TIPS -->
+<div class="tips">
+  <div class="tip-card">
+    <h4>💪 쉐이크 대체 (간 건강)</h4>
+    <ul>
+      <li>달걀흰자 3~4개</li>
+      <li>두부 100~150g</li>
+      <li>무가당 두유 200ml</li>
+      <li>삶은 닭가슴살 80~100g</li>
+    </ul>
+  </div>
+  <div class="tip-card">
+    <h4>🚫 전 기간 금지</h4>
+    <ul>
+      <li>설탕·액상과당·주스</li>
+      <li>밀가루(빵·라면·파스타)</li>
+      <li>과자·아이스크림</li>
+      <li>가당 유제품·커피믹스</li>
+    </ul>
+  </div>
+  <div class="tip-card">
+    <h4>⚡ 24h 단식 규칙</h4>
+    <ul>
+      <li>3·4주차 주 2회</li>
+      <li>이틀 연속 금지</li>
+      <li>단식 후 고단백 식사 필수</li>
+      <li>물·블랙커피·녹차 가능</li>
+    </ul>
+  </div>
+  <div class="tip-card">
+    <h4>📋 기본 수칙</h4>
+    <ul>
+      <li>물 2L 이상 매일</li>
+      <li>수면 6시간+ (자정 포함)</li>
+      <li>주 4회 이상 운동</li>
+      <li>저녁 취침 4시간 전 완료</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /page -->
+
+    <div id="modalSteps"></div>
+    <div class="modal-note" id="modalNote"></div>
+    <button class="modal-close" onclick="document.getElementById('homeModal').classList.remove('open')">확인</button>
+  </div>
+</div>
+<script>
+
+const STORE = 'switchon_v1';
+
+// ── 저장 / 불러오기 ──
+function save() {
+  const data = {
+    startWeight: document.getElementById('startWeight').value,
+    weights: {},
+    checks: {}
+  };
+  document.querySelectorAll('.weight-input').forEach(inp => {
+    if (inp.value) data.weights[inp.dataset.day] = inp.value;
+  });
+  document.querySelectorAll('.meal-cb').forEach(cb => {
+    if (cb.checked) data.checks[cb.id] = true;
+  });
+  localStorage.setItem(STORE, JSON.stringify(data));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch(e) { return {}; }
+}
+
+// ── 체크박스 ──
+document.querySelectorAll('.meal-row').forEach((row, i) => {
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'meal-cb';
+  cb.id = 'cb_' + i;
+  row.insertBefore(cb, row.firstChild);
+  cb.addEventListener('change', () => {
+    row.classList.toggle('done', cb.checked);
+    save();
+  });
+  row.addEventListener('click', (e) => {
+    if (e.target === cb) return;
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+  });
+});
+
+// ── 숫자 + . 만 허용 ──
+function numericOnly(el) {
+  el.addEventListener('input', () => {
+    el.value = el.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+  });
+}
+
+// ── 차이 계산 ──
+function updateDiffs() {
+  const start = parseFloat(document.getElementById('startWeight').value);
+  document.querySelectorAll('.weight-input').forEach(inp => {
+    const diff = document.getElementById('diff-' + inp.dataset.day);
+    if (!diff) return;
+    const daily = parseFloat(inp.value);
+    if (isNaN(start) || isNaN(daily)) {
+      diff.textContent = ''; diff.className = 'weight-diff'; return;
+    }
+    const delta = +(daily - start).toFixed(1);
+    if (delta < 0)      { diff.textContent = `(${delta}kg)`;  diff.className = 'weight-diff minus'; }
+    else if (delta > 0) { diff.textContent = `(+${delta}kg)`; diff.className = 'weight-diff plus';  }
+    else                { diff.textContent = `(±0kg)`;         diff.className = 'weight-diff zero';  }
+  });
+}
+
+// ── 시작체중 ──
+const startInput = document.getElementById('startWeight');
+numericOnly(startInput);
+startInput.addEventListener('input', () => { updateDiffs(); save(); });
+
+// ── 일별 체중 ──
+document.querySelectorAll('.weight-input').forEach(inp => {
+  numericOnly(inp);
+  inp.addEventListener('input', () => { updateDiffs(); save(); });
+});
+
+// ── 페이지 열릴 때 복원 ──
+(function restore() {
+  const data = load();
+  if (data.startWeight) {
+    document.getElementById('startWeight').value = data.startWeight;
+  }
+  if (data.weights) {
+    Object.entries(data.weights).forEach(([day, val]) => {
+      const inp = document.querySelector(`.weight-input[data-day="${day}"]`);
+      if (inp) inp.value = val;
+    });
+  }
+  if (data.checks) {
+    Object.keys(data.checks).forEach(id => {
+      const cb = document.getElementById(id);
+      if (cb) {
+        cb.checked = true;
+        cb.closest('.meal-row')?.classList.add('done');
+      }
+    });
+  }
+  updateDiffs();
+})();
+</script>
+</body>
+</html>
