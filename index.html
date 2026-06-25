@@ -431,7 +431,7 @@
         <option value="24인치Chloe">24인치Chloe</option>
         <option value="다이어트곧끝날율">다이어트곧끝날율</option>
         <option value="프로수영러">프로수영러</option>
-        <option value="미라클모닝">미라클모닝</option>
+        <option value="미라클화영">미라클화영</option>
         <option value="위태로운서현">위태로운서현</option>
       </select>
       <button onclick="loadFromSheet()" style="margin-top:0.6rem; width:100%; padding:0.6rem; background:var(--green-light); color:var(--green); border:1.5px solid var(--green-mid); border-radius:10px; font-size:0.85rem; font-weight:700; cursor:pointer;">
@@ -636,6 +636,9 @@ window.onload = () => {
 };
 
 function formatDateInput(d) {
+  if (!(d instanceof Date) || isNaN(d.getTime())) {
+    d = new Date(); // 잘못된 값이 들어오면 오늘 날짜로 대체 (에러로 멈추지 않게)
+  }
   return d.toISOString().slice(0,10);
 }
 
@@ -661,10 +664,27 @@ function loadFromSheet() {
       const day1 = res.days.find(d => d.day === 1) || res.days.sort((a,b)=>a.day-b.day)[0];
       let computedStart = null;
       if (day1 && day1.date) {
-        const d = new Date(day1.date + 'T00:00:00');
-        d.setDate(d.getDate() - (day1.day - 1));
-        computedStart = formatDateInput(d);
+        // 시트에서 날짜가 "2026-06-25" 문자열로도 오고,
+        // 가끔 "Thu Jun 25 2026 00:00:00 GMT..." 같은 풀 포맷으로도 옴 → 안전하게 파싱
+        let rawDate = String(day1.date).trim();
+        let parsed = null;
+
+        if (/^\d{4}-\d{2}-\d{2}/.test(rawDate)) {
+          // "2026-06-25" 또는 "2026-06-25T00:00:00.000Z" 형태
+          parsed = new Date(rawDate.slice(0, 10) + 'T00:00:00');
+        } else {
+          // 그 외 포맷은 Date 생성자가 직접 파싱
+          const tryDate = new Date(rawDate);
+          if (!isNaN(tryDate.getTime())) parsed = tryDate;
+        }
+
+        if (parsed && !isNaN(parsed.getTime())) {
+          parsed.setDate(parsed.getDate() - (day1.day - 1));
+          computedStart = formatDateInput(parsed);
+        }
       }
+      // 날짜 계산에 실패하면 오늘 날짜로 대체 (절대 멈추지 않게)
+      if (!computedStart) computedStart = formatDateInput(new Date());
 
       data = { header: { nickname: nickname, start: res.header.start, goal: res.header.goal } };
       res.days.forEach(d => {
