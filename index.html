@@ -639,7 +639,11 @@ function formatDateInput(d) {
   if (!(d instanceof Date) || isNaN(d.getTime())) {
     d = new Date(); // 잘못된 값이 들어오면 오늘 날짜로 대체 (에러로 멈추지 않게)
   }
-  return d.toISOString().slice(0,10);
+  // 로컬 시간 기준으로 YYYY-MM-DD 생성 (toISOString은 UTC라 시간대 오차가 생김)
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function loadFromSheet() {
