@@ -48,7 +48,7 @@ header h1{font-size:1.2rem;font-weight:800;}
 .weight-bar input::placeholder{color:rgba(255,255,255,.55);}
 
 /* HEADER ACTIONS */
-.header-actions{background:var(--pl);border-bottom:1px solid var(--pm);padding:.55rem 1rem;display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;}
+.header-actions{background:var(--pl);border-bottom:1px solid var(--pm);padding:.55rem 1rem;display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;position:sticky;top:0;z-index:99;}
 .ha-text{font-size:.76rem;color:var(--tl);flex:1;text-align:center;}
 .btn-sm{padding:.32rem .8rem;border-radius:20px;font-size:.74rem;font-weight:700;cursor:pointer;border:none;transition:opacity .15s;}
 .btn-graph{background:var(--mint);color:#fff;}
@@ -63,6 +63,11 @@ header h1{font-size:1.2rem;font-weight:800;}
 
 /* DAY CARD */
 .day-card{background:var(--card);border:1px solid var(--border);border-top:none;padding:.9rem 1rem;transition:background .2s;}
+.day-card.collapsed .day-body{display:none;}
+.day-card.collapsed{padding:.55rem 1rem;}
+.collapse-btn{background:none;border:none;cursor:pointer;font-size:.75rem;color:var(--gray);padding:0 .2rem;line-height:1;margin-left:.3rem;opacity:.6;}
+.collapse-btn:hover{opacity:1;}
+.day-top-row{display:flex;align-items:center;justify-content:space-between;}
 .day-card:last-child{border-radius:0 0 14px 14px;}
 .day-card.fasting{background:var(--pul);border-color:var(--pum);}
 .day-top{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.6rem;}
@@ -370,6 +375,15 @@ function showApp(){
   if(data.header?.start) document.getElementById('hdr-start').value=data.header.start;
   if(data.header?.goal) document.getElementById('hdr-goal').value=data.header.goal;
   renderWeeks(); updateTurtle();
+
+  // header-actions를 header 높이 아래 sticky로 고정
+  const hdrEl = document.querySelector('header');
+  const haEl = document.querySelector('.header-actions');
+  if(hdrEl && haEl){
+    const setHaTop = () => { haEl.style.top = hdrEl.offsetHeight + 'px'; };
+    setHaTop();
+    window.addEventListener('resize', setHaTop);
+  }
 }
 
 // ── RENDER ──
@@ -391,9 +405,10 @@ function mkCard(dn,wn){
   const fast=isFasting(dn);
   const d=getDate(dn); const today=isToday(d);
   const card=document.createElement('div');
-  card.className='day-card'+(fast?' fasting':''); card.id=`day-${dn}`;
+  card.className='day-card'+(fast?' fasting':'')+(today?'':' collapsed');
+  card.id=`day-${dn}`;
 
-  // top row
+  // top row (항상 보임)
   const top=document.createElement('div'); top.className='day-top';
   const num=document.createElement('div'); num.className='day-num';
   num.textContent=dn===28?'28 🎉':dn;
@@ -413,7 +428,20 @@ function mkCard(dn,wn){
     lb.innerHTML='<span class="fasting-badge">⚡ 단식일</span>';
     tr.appendChild(cb); tr.appendChild(lb); top.appendChild(tr);
   }
+  // 접기/펼치기 버튼
+  const cbtn=document.createElement('button');
+  cbtn.className='collapse-btn';
+  cbtn.textContent=today?'▲':'▼';
+  cbtn.title='접기/펼치기';
+  cbtn.addEventListener('click',()=>{
+    const isCol=card.classList.toggle('collapsed');
+    cbtn.textContent=isCol?'▼':'▲';
+  });
+  top.appendChild(cbtn);
   card.appendChild(top);
+
+  // day-body (접히는 영역)
+  const body=document.createElement('div'); body.className='day-body';
 
   // weight + bodyfat
   const sk=parseFloat(data.header?.start)||null;
@@ -438,7 +466,7 @@ function mkCard(dn,wn){
   if(data[dn]?.bodyFat) bfi.value=data[dn].bodyFat;
   bfi.addEventListener('input',()=>{if(!data[dn])data[dn]={};data[dn].bodyFat=bfi.value;saveAll();debounceSend(dn);});
   wr.appendChild(bfl); wr.appendChild(bfi); wr.appendChild(document.createTextNode(' %'));
-  card.appendChild(wr);
+  body.appendChild(wr);
 
   // extra
   const er=document.createElement('div'); er.className='extra-rows';
@@ -456,7 +484,7 @@ function mkCard(dn,wn){
   }
   er.appendChild(mkExtra('🏃','운동','exercise','예) 런닝 30분',false));
   er.appendChild(mkExtra('😴','수면','sleep','시간',true));
-  card.appendChild(er);
+  body.appendChild(er);
 
   // meals
   const mDefs=fast?FM:(wn<=2?(RM[dn]||W34):W34);
@@ -469,7 +497,8 @@ function mkCard(dn,wn){
     inp.addEventListener('input',()=>{if(!data[dn])data[dn]={};if(!data[dn].meals)data[dn].meals={};data[dn].meals[m.l]=inp.value;saveAll();debounceSend(dn);});
     row.appendChild(inp); md.appendChild(row);
   });
-  card.appendChild(md);
+  body.appendChild(md);
+  card.appendChild(body);
   return card;
 }
 
