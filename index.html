@@ -192,6 +192,8 @@
 
   .week-fast-note { background: var(--purple-light); border: 1px dashed var(--purple-mid); padding: 0.55rem 1rem; font-size: 0.73rem; color: var(--purple); font-weight: 600; }
   .meal-fast-cb { width: 13px; height: 13px; accent-color: var(--purple); cursor: pointer; flex-shrink: 0; }
+  .meal-fast-cb:disabled { opacity: 0.25; cursor: not-allowed; }
+  .meal-fast-cb:disabled + .meal-fast-label { opacity: 0.25; }
   .meal-fasted { opacity: 0.45; text-decoration: line-through; }
   .meal-fast-label { font-size: 0.7rem; color: var(--purple); font-weight: 700; white-space: nowrap; }
 
@@ -652,25 +654,57 @@ function renderCard(dayNum,weekNum,todayNum){
   // 끼니
   const mDefs=weekNum<=2?(RM[dayNum]||W34):W34;
   const mDiv=document.createElement('div');mDiv.className='meals';
+
+  // 주차별 단식 최대 끼니 수 (1주차=0, 2주차=2, 3주차=4, 4주차=6)
+  const maxFastMeals={1:0,2:2,3:4,4:6}[weekNum]||0;
+
+  // 이번 주 전체 단식 끼니 수 계산
+  function countWeekFasts(){
+    const weekDays=WEEKS.find(w=>w.num===weekNum)?.days||[];
+    let count=0;
+    weekDays.forEach(dn=>{
+      const fm=data[dn]?.fastMeals||{};
+      count+=Object.values(fm).filter(v=>v===true).length;
+    });
+    return count;
+  }
+
+  // 이 카드의 단식 끼니 수
+  function countDayFasts(){
+    return Object.values(data[dayNum]?.fastMeals||{}).filter(v=>v===true).length;
+  }
+
+  // 전체 단식버튼 활성화 상태 업데이트
+  function updateFastButtons(){
+    const total=countWeekFasts();
+    const reached=total>=maxFastMeals;
+    mDiv.querySelectorAll('.meal-fast-cb').forEach(cb=>{
+      // 이미 체크된 건 유지, 미체크인데 한도 찼으면 비활성화
+      if(!cb.checked) cb.disabled=(maxFastMeals===0||reached);
+    });
+  }
+
   mDefs.forEach(m=>{
     const row=document.createElement('div');row.className='meal-row';
     const isFasted=data[dayNum]?.fastMeals?.[m.label]===true;
 
-    // 아이콘 + 라벨
     const iconEl=document.createElement('span');iconEl.className='meal-icon';iconEl.textContent=m.icon;
     const labelEl=document.createElement('span');labelEl.className='meal-label';labelEl.textContent=m.label;
 
-    // 단식 체크박스
+    // 단식 체크박스 (1주차는 아예 숨김)
     const fcb=document.createElement('input');fcb.type='checkbox';fcb.className='meal-fast-cb';
     fcb.checked=isFasted;
     const fcbLabel=document.createElement('span');fcbLabel.className='meal-fast-label';fcbLabel.textContent='단식';
 
-    // 식사 입력칸
+    if(weekNum===1){
+      fcb.style.display='none';
+      fcbLabel.style.display='none';
+    }
+
     const inp=document.createElement('input');inp.className='meal-input';inp.type='text';
     inp.placeholder=m.ph;inp.value=data[dayNum]?.meals?.[m.label]||'';
     if(isFasted){inp.disabled=true;inp.style.display='none';}
 
-    // 단식 체크 이벤트
     fcb.addEventListener('change',()=>{
       if(!data[dayNum])data[dayNum]={};
       if(!data[dayNum].fastMeals)data[dayNum].fastMeals={};
@@ -679,6 +713,8 @@ function renderCard(dayNum,weekNum,todayNum){
       inp.style.display=fcb.checked?'none':'';
       labelEl.classList.toggle('meal-fasted',fcb.checked);
       saveAll();sendDebounced(dayNum);
+      // 주 전체 단식버튼 재계산 (다른 카드들도)
+      document.querySelectorAll(`[data-week="${weekNum}"]`).forEach(el=>el._updateFastButtons&&el._updateFastButtons());
     });
 
     inp.addEventListener('input',()=>{
@@ -688,10 +724,16 @@ function renderCard(dayNum,weekNum,todayNum){
     });
 
     if(isFasted)labelEl.classList.add('meal-fasted');
-
     row.appendChild(iconEl);row.appendChild(labelEl);row.appendChild(fcb);row.appendChild(fcbLabel);row.appendChild(inp);
     mDiv.appendChild(row);
   });
+
+  // 카드에 주차 정보 태그 + updateFastButtons 콜백 달기
+  card.dataset.week=weekNum;
+  card._updateFastButtons=updateFastButtons;
+  // 초기 상태 적용 (다음 틱에)
+  setTimeout(updateFastButtons,0);
+
   contentTarget.appendChild(mDiv);
   return card;
 }
