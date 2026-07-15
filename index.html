@@ -200,7 +200,7 @@ header h1{font-size:1.2rem;font-weight:800;}
   <div class="tips-section">
     <div class="tip-card mint"><h4>💪 쉐이크 대체</h4><ul><li>달걀흰자 3~4개</li><li>두부 100~150g</li><li>무가당 두유 200ml</li><li>삶은 닭가슴살 80~100g</li></ul></div>
     <div class="tip-card red"><h4>🚫 전 기간 금지</h4><ul><li>설탕·액상과당·주스</li><li>밀가루(빵·라면·파스타)</li><li>과자·아이스크림</li><li>가당 유제품·커피믹스</li></ul></div>
-    <div class="tip-card purple"><h4>⚡ 끼니 단식 규칙</h4><ul><li>2주차: 주 1일, 2끼 연속 단식</li><li>3주차: 주 2일, 2끼 연속 단식</li><li>4주차: 주 3일, 2끼 연속 단식</li><li>간식은 2주차부터 자동 단식</li></ul></div>
+    <div class="tip-card purple"><h4>⚡ 끼니 단식 규칙</h4><ul><li>2주차: 주 1일, 2끼 연속 단식</li><li>3주차: 주 2일, 2끼 연속 단식</li><li>4주차: 주 3일, 2끼 연속 단식</li><li>아침/저녁 단식 시 간식 자동 단식</li></ul></div>
     <div class="tip-card gold"><h4>📋 기본 수칙</h4><ul><li>물 2L 이상 매일</li><li>수면 6시간+</li><li>주 4회 이상 운동</li><li>저녁 취침 4시간 전</li></ul></div>
   </div>
 </div>
@@ -482,8 +482,7 @@ function mkCard(dn,wn){
     const row=document.createElement('div'); row.className='meal-row';
     const isSnak = m.l==='간식';
     const isF = isMealFast(dn, m.l);
-    // 2주차부터 간식은 항상 단식(비활성)
-    const autoFast = wn>=2 && isSnak;
+    const autoFast = false; // 자동 단식 없음 - 간식도 사용자가 직접 선택
 
     row.innerHTML=`<span class="meal-icon">${m.i}</span><span class="meal-label">${m.l}</span>`;
     const inp=document.createElement('input'); inp.className='meal-input'+(isF||autoFast?' fasted':'');
@@ -494,7 +493,7 @@ function mkCard(dn,wn){
     row.appendChild(inp);
 
     // 단식 버튼 (간식 제외, 2주차 이후)
-    if(fastAllowed && !isSnak){
+    if(fastAllowed){
       const fb=document.createElement('button');
       fb.className='fast-meal-btn'+(isF?' active':'');
       fb.textContent=isF?'단식중':'단식';
@@ -539,7 +538,7 @@ function mkCard(dn,wn){
         } else {
           fm.splice(idx,1);
         }
-        saveAll(); renderWeeks(); debounceSend(dn);
+        saveAll(); refreshMeals(dn,wn); debounceSend(dn);
       });
       row.appendChild(fb);
     }
@@ -591,6 +590,76 @@ function updateTurtle(){
 
 // ── SHEET ──
 const timers={};
+function refreshMeals(dn, wn){
+  const card = document.getElementById(`day-${dn}`);
+  if(!card) return;
+  const oldMeals = card.querySelector('.meals');
+  if(!oldMeals) return;
+
+  const mDefs = wn<=2 ? (RM[dn]||W34) : W34;
+  const md = document.createElement('div'); md.className='meals';
+  const fastAllowed = wn>=2;
+
+  mDefs.forEach(m=>{
+    const isF = isMealFast(dn, m.l);
+    const row = document.createElement('div'); row.className='meal-row';
+    row.innerHTML=`<span class="meal-icon">${m.i}</span><span class="meal-label">${m.l}</span>`;
+    const inp = document.createElement('input'); inp.className='meal-input'+(isF?' fasted':'');
+    inp.type='text'; inp.placeholder=isF?'(단식)':m.p;
+    inp.value = data[dn]?.meals?.[m.l]||'';
+    inp.disabled = isF;
+    inp.addEventListener('input',()=>{
+      if(!data[dn]) data[dn]={};
+      if(!data[dn].meals) data[dn].meals={};
+      data[dn].meals[m.l]=inp.value; saveAll(); debounceSend(dn);
+    });
+    row.appendChild(inp);
+
+    if(fastAllowed){
+      const fb = document.createElement('button');
+      fb.className='fast-meal-btn'+(isF?' active':'');
+      fb.textContent = isF?'단식중':'단식';
+      fb.addEventListener('click',()=>{
+        if(!data[dn]) data[dn]={};
+        if(!data[dn].fastMeals) data[dn].fastMeals=[];
+        const fm = data[dn].fastMeals;
+        const idx = fm.indexOf(m.l);
+        if(idx===-1){
+          const order=['아침','점심','간식','저녁'];
+          const newFm=[...fm, m.l];
+          const fastedIdx = newFm.map(x=>order.indexOf(x)).sort((a,b)=>a-b);
+          let consecutive=true;
+          for(let i=1;i<fastedIdx.length;i++){
+            if(fastedIdx[i]-fastedIdx[i-1]>1){consecutive=false;break;}
+          }
+          if(fm.length>=2){alert('하루 최대 2끼까지 단식할 수 있어요.');return;}
+          if(!consecutive){alert('연속된 끼니로 단식해야 해요.\n(예: 아침+점심, 점심+간식, 간식+저녁 등)');return;}
+          const weekRanges={2:[8,14],3:[15,21],4:[22,28]};
+          const wr2=weekRanges[wn];
+          if(wr2){
+            const maxDays={2:1,3:2,4:3}[wn];
+            let daysWithFast=0;
+            for(let dd=wr2[0];dd<=wr2[1];dd++){
+              if(dd!==dn&&(data[dd]?.fastMeals?.length>0)) daysWithFast++;
+            }
+            if(fm.length===0&&daysWithFast>=maxDays){
+              alert(`${wn}주차는 주 ${maxDays}일까지만 단식할 수 있어요.`); return;
+            }
+          }
+          fm.push(m.l);
+        } else {
+          fm.splice(idx,1);
+        }
+        saveAll(); refreshMeals(dn,wn); debounceSend(dn);
+      });
+      row.appendChild(fb);
+    }
+    md.appendChild(row);
+  });
+
+  oldMeals.replaceWith(md);
+}
+
 function debounceSend(dn){if(timers[dn])clearTimeout(timers[dn]);timers[dn]=setTimeout(()=>sendSheet(dn),1200);}
 function sendSheet(dn){
   if(!data.header?.nickname) return;
